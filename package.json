@@ -6,7 +6,8 @@
   "scripts": {
     "test": "npx hardhat test",
     "verify": "npx hardhat verify",
-    "compile": "npx hardhat compile"
+    "compile": "npx hardhat compile",
+    "format": "prettier --config .prettierrc --write \"**/*.{json,md,sol,yml}\""
   },
   "repository": {
     "type": "git",
