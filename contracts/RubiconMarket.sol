@@ -7,7 +7,7 @@ pragma solidity ^0.8.9;
 /// @title RubiconMarket.sol
 /// @notice Please see the repository for this code at https://github.com/RubiconDeFi/rubicon-protocol-v1;
 /// @notice This contract is a derivative work, and spiritual continuation, of the open-source work from Oasis DEX: https://github.com/OasisDEX/oasis
-
+import { console2 } from "forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/StorageSlot.sol";
 
