@@ -33,6 +33,7 @@ contract AuditTest is Test {
   // test tokens
   TokenWithFaucet TEST;
   TokenWithFaucet TUSDC;
+  TokenWithFaucet GUSD;
   WETH9 WETH;
   // Pools
   WhitePaperInterestRateModel irModel;
@@ -58,6 +59,7 @@ contract AuditTest is Test {
     // deploy test tokens
     TEST = new TokenWithFaucet(address(this), "Test", "TEST", 18);
     TUSDC = new TokenWithFaucet(address(this), "Test Stablecoin", "TUSDC", 6);
+    GUSD = new TokenWithFaucet(address(this), "Gemini dollar", "GUSD", 2);
     WETH = new WETH9();
 
     // create InterestRateModel;
@@ -112,6 +114,7 @@ contract AuditTest is Test {
   }
 
   //========================MARKET_TESTS========================
+  // M01
   function testOfferFeeOnTransferToken () public {
     uint256 payAmount = 1000e18;
     uint256 buyAmount = 1000e6;
@@ -154,6 +157,42 @@ contract AuditTest is Test {
     market.buy(offerTwoId, payAmount);
 
     assertEq(feeOnTransferToken.balanceOf(address(market)), 800e18);
+
+    vm.stopPrank();
+  }
+
+  // M02
+  function testBuyFeeLowDecimal() public {
+    uint256 payAmount = 1000e18;
+    uint256 buyAmount = 500e2;
+
+    TEST.transfer(alice, payAmount);
+
+    vm.startPrank(alice);
+    TEST.approve(address(market), type(uint256).max);
+
+    uint256 offerOneId = market.offer(payAmount, TEST, buyAmount, GUSD, alice, alice);
+    (uint256 offerPayAmt,, uint256 offerBuyAmount,) = market.getOffer(offerOneId);
+
+    vm.stopPrank();
+
+    GUSD.transfer(bob, buyAmount * 2);
+
+    vm.startPrank(bob);
+
+    GUSD.approve(address(market), type(uint256).max);
+
+    market.buy(offerOneId, payAmount);
+
+    assertEq(GUSD.balanceOf(alice), buyAmount);
+
+    /**
+     * Mathematically, the fee should be: 500 * 0.0001 = 0.05
+     * But in Solidity, the fee is calculated the following way:
+     * amount * feeBPS / 100_000 = 50000 * 1 / 100_000 = 0
+     * It returns 0 cause Solidity truncates down 0.5 to 0
+     */
+    assertEq(GUSD.balanceOf(FEE_TO), 0);
 
     vm.stopPrank();
   }
